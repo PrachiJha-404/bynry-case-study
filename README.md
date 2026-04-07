@@ -223,7 +223,7 @@ These are the questions I would ask about the missing requirements:
 SKU only needs to be unique within a company's catalog. A global unique constraint would mean two completely separate businesses can't both use "WID-001", which is unnecessarily restrictive and would cause artificial conflicts at scale.
 
 **`CHECK (price >= 0)`**
-Prevents garbage data at the DB level, not just the application level. Application validation can be bypassed (direct DB access, migrations, scripts) — the constraint cannot.
+Prevents garbage data at the DB level, not just the application level. Application validation can be bypassed (direct DB access, migrations, scripts) - the constraint cannot.
 
 **`CHECK (quantity >= 0)` on inventory**
 Prevents negative stock unless we explicitly decide to allow backorders. Better to be strict now and relax it later than to discover negative quantities corrupting reports.
@@ -232,10 +232,10 @@ Prevents negative stock unless we explicitly decide to allow backorders. Better 
 A bundle containing zero of something is meaningless. Enforced at the DB level so no application bug can create it.
 
 **`ON DELETE CASCADE` on warehouses, products, inventory**
-If a company is deleted, all its data goes with it cleanly. If a product is deleted, its inventory rows don't become orphans pointing at a non-existent product. This is safer than leaving dangling foreign keys, though it assumes hard deletes — worth discussing with the team (gap #9 in your list).
+If a company is deleted, all its data goes with it cleanly. If a product is deleted, its inventory rows don't become orphans pointing at a non-existent product. This is safer than leaving dangling foreign keys, though it assumes hard deletes, worth discussing with the team (gap #9 in your list).
 
 **`NUMERIC(12, 2)` for price instead of `FLOAT`**
-`FLOAT` is a binary approximation — 0.1 + 0.2 in floating point is 0.30000000000000004. For money, this causes real rounding errors at scale. `NUMERIC` stores exact decimal values.
+`FLOAT` is a binary approximation, 0.1 + 0.2 in floating point is 0.30000000000000004. For money, this causes real rounding errors at scale. `NUMERIC` stores exact decimal values.
 
 **`TIMESTAMPTZ` instead of `TIMESTAMP`**
 Stores timezone-aware timestamps. If your servers or users are ever in different timezones (almost certain for a B2B SaaS), naive timestamps become ambiguous and cause ordering bugs. Always use `TIMESTAMPTZ`.
@@ -343,7 +343,7 @@ import (
 
 const (
 	// How far back we look for sales activity.
-	// A product with zero sales in this window is excluded — it's slow-moving,
+	// A product with zero sales in this window is excluded - it's slow-moving,
 	// not low-stock. Ask the product team if this should be configurable per company.
 	recentActivityDays = 30
 
@@ -354,7 +354,7 @@ const (
 
 // ── Response types ────────────────────────────────────────────────────────────
 // These match the spec's JSON shape exactly. Pointer fields (*int, *Supplier)
-// go null in JSON when nil — e.g. a product with no supplier, or one
+// go null in JSON when nil e.g. a product with no supplier, or one
 // where days_until_stockout can't be calculated (zero avg daily sales).
 
 type Supplier struct {
@@ -383,7 +383,7 @@ type AlertsResponse struct {
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 // LowStockHandler holds the DB reference. In Go this is the idiomatic way to
-// share dependencies with handlers — no global state, easy to test by injecting
+// share dependencies with handlers, no global state, easy to test by injecting
 // a mock DB.
 type LowStockHandler struct {
 	db *sql.DB
@@ -418,7 +418,7 @@ func (h *LowStockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Always return an array, never null — easier for clients to handle.
+	// Always return an array, never null, easier for clients to handle.
 	if alerts == nil {
 		alerts = []Alert{}
 	}
@@ -435,7 +435,7 @@ var errCompanyNotFound = fmt.Errorf("company not found")
 
 func (h *LowStockHandler) fetchAlerts(ctx context.Context, companyID int) ([]Alert, error) {
 	// First verify the company exists. Without this, a bad company_id just
-	// returns an empty alert list, which looks like success — misleading.
+	// returns an empty alert list, which looks like success.
 	var exists bool
 	err := h.db.QueryRowContext(ctx,
 		`SELECT EXISTS(SELECT 1 FROM companies WHERE id = $1)`, companyID,
@@ -454,7 +454,7 @@ func (h *LowStockHandler) fetchAlerts(ctx context.Context, companyID int) ([]Ale
 	// recent_sales:
 	//   Sums all outbound (sale) events per product/warehouse in the activity
 	//   window. Products with no sales in the window are excluded because
-	//   the main query INNER JOINs on this CTE — intentional, not a bug.
+	//   the main query INNER JOINs on this CTE, intentional, not a bug.
 	//   avg_daily_sales is the key metric for days_until_stockout.
 	//
 	// preferred_supplier:
