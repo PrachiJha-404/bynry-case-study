@@ -273,7 +273,7 @@ Every meaningful product query starts with "for this company." Without this, eve
 
 #### ER Diagram
 
-*(See original document)*
+![ER Diagram Description](ERD.png)
 
 ---
 
@@ -667,10 +667,6 @@ func main() {
 - Results sorted by `days_until_stockout ASC NULLS LAST` — most urgent alerts surface first, nulls don't bubble to the top
 
 **Explain Approach:** Add comments explaining your logic
-
-#### Visualized flow
-
-*(See original document)*
 
 ---
 
